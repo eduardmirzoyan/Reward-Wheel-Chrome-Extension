@@ -2,7 +2,7 @@
 
 A small Chrome extension popup for celebrating habits with a virtual cash-reward
 wheel. Click the extension icon, then select **Spin the wheel**. Your virtual
-reward balance and spin count are saved locally in the browser.
+reward balance is saved locally in the browser.
 
 Rewards are for habit-building motivation only; they are not real money and
 cannot be redeemed.

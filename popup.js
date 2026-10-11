@@ -19,15 +19,12 @@ const SEGMENT_COLORS = [
 const wheel = document.querySelector("#wheel");
 const spinButton = document.querySelector("#spin-button");
 const resetButton = document.querySelector("#reset-button");
-const feedback = document.querySelector("#feedback");
 const feedbackKaomoji = document.querySelector("#feedback-kaomoji");
 const feedbackMessage = document.querySelector("#feedback-message");
 const balanceDisplay = document.querySelector("#balance");
-const spinCountDisplay = document.querySelector("#spin-count");
 const status = document.querySelector("#status");
 
 let totalCents = 0;
-let spinCount = 0;
 let rotation = 0;
 let spinning = false;
 let resetting = false;
@@ -82,9 +79,6 @@ function formatMoney(cents) {
 
 function updateDisplays() {
   balanceDisplay.textContent = formatMoney(totalCents);
-  if (spinCountDisplay) {
-    spinCountDisplay.textContent = `${spinCount} ${spinCount === 1 ? "spin" : "spins"}`;
-  }
 }
 
 function randomSegmentIndex() {
@@ -108,7 +102,7 @@ function randomSegmentIndex() {
 }
 
 async function saveProgress() {
-  await chrome.storage.local.set({ totalCents, spinCount });
+  await chrome.storage.local.set({ totalCents });
 }
 
 async function initialize() {
@@ -126,12 +120,9 @@ async function initialize() {
 
   drawWheel();
   try {
-    const saved = await chrome.storage.local.get(["totalCents", "spinCount"]);
+    const saved = await chrome.storage.local.get("totalCents");
     totalCents = Number.isSafeInteger(saved.totalCents) && saved.totalCents >= 0
       ? saved.totalCents
-      : 0;
-    spinCount = Number.isSafeInteger(saved.spinCount) && saved.spinCount >= 0
-      ? saved.spinCount
       : 0;
     updateDisplays();
     spinButton.disabled = false;
@@ -168,7 +159,6 @@ spinButton.addEventListener("click", () => {
     wheel.removeEventListener("transitionend", onSpinEnd);
     rotation = targetRotation;
     totalCents += reward;
-    spinCount += 1;
     updateDisplays();
     setFeedback("ヽ(^o^)ノ", `You earned ${formatMoney(reward)}!`);
     try {

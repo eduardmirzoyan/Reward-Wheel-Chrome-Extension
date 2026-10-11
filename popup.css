@@ -4,20 +4,15 @@
   --font-size-default: 16px;
   --font-size-large: 24px;
 
-  --color-neutral-0: #fff;
-  --color-neutral-50: #f6f5f1;
+  --color-neutral-0: #ffffff;
   --color-neutral-100: #e9e8e1;
   --color-neutral-200: #d8ddd4;
-  --color-neutral-500: #92968e;
   --color-neutral-600: #73796f;
-  --color-neutral-900: #20251f;
 
   --color-brand-50: #edf3e9;
-  --color-brand-100: #e4f1dc;
   --color-brand-200: #b8c8b1;
   --color-brand-300: #91bf79;
   --color-brand-600: #477b3b;
-  --color-brand-700: #3f733b;
   --color-brand-800: #356346;
   --color-brand-900: #294c36;
   --color-brand-950: #1e3828;
@@ -35,8 +30,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--color-neutral-50);
-  color: var(--color-neutral-900);
+  background: var(--color-neutral-0);
 }
 
 * {
@@ -55,7 +49,7 @@ button {
 .app {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   padding: 24px 24px 12px;
   text-align: center;
 }
@@ -67,7 +61,7 @@ button {
 .header {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 12px;
   text-align: left;
 }
 
@@ -77,7 +71,7 @@ button {
   height: 39px;
   place-items: center;
   border-radius: 13px;
-  background: var(--color-brand-100);
+  background: var(--color-brand-50);
   color: var(--color-brand-600);
   font-size: var(--font-size-large);
 }
@@ -111,12 +105,6 @@ h1 {
   font-family: var(--font-family);
   font-size: var(--font-size-default);
   font-weight: 700;
-}
-
-.intro {
-  margin: 23px 0 17px;
-  color: var(--color-neutral-600);
-  font-size: var(--font-size-default);
 }
 
 .wheel-panel {
@@ -201,8 +189,8 @@ h1 {
   margin: 0;
   padding: 8px 20px;
   border-radius: 12px;
-  background: var(--color-brand-100);
-  color: var(--color-brand-700);
+  background: var(--color-brand-50);
+  color: var(--color-brand-600);
   font-size: var(--font-size-default);
   font-weight: 700;
   line-height: 1.2;
@@ -255,10 +243,6 @@ h1 {
   opacity: 0.66;
 }
 
-.button-arrow {
-  font-size: var(--font-size-default);
-}
-
 .status {
   min-height: 15px;
   margin: 0;
@@ -271,14 +255,14 @@ h1 {
   display: block;
   margin: 0 auto;
   padding: 7px 12px;
-  border: 1px solid var(--color-neutral-200);
+  border: 1px solid var(--color-neutral-600);
   border-radius: 9px;
   background: transparent;
   color: var(--color-neutral-600);
   cursor: pointer;
   font-size: var(--font-size-small);
   font-weight: 600;
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  transition: 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .reset-button:hover:not(:disabled) {
@@ -295,12 +279,6 @@ h1 {
 .reset-button:disabled {
   cursor: wait;
   opacity: 0.6;
-}
-
-.footnote {
-  margin: 7px 0 0;
-  color: var(--color-neutral-500);
-  font-size: var(--font-size-small);
 }
 
 @media (prefers-reduced-motion: reduce) {
