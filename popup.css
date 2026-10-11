@@ -203,8 +203,15 @@ h1 {
 }
 
 .feedback {
-  min-height: 20px;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
   margin: 0;
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: var(--color-brand-light);
   color: var(--color-brand-strong);
   font-size: var(--font-size-default);
   font-weight: 700;
