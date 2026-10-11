@@ -3,6 +3,7 @@
   --font-size-small: 10px;
   --font-size-default: 16px;
   --font-size-large: 24px;
+  --font-weight-bold: 700;
 
   --color-neutral-0: #ffffff;
   --color-neutral-100: #e9e8e1;
@@ -50,11 +51,11 @@ button {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 24px 24px 12px;
+  padding: 12px 12px 12px;
   text-align: center;
 }
 
-.head-lockup {
+.top-section {
   width: 100%;
 }
 
@@ -65,31 +66,29 @@ button {
   text-align: left;
 }
 
-.brand-mark {
+.brand-icon {
   display: grid;
-  width: 39px;
-  height: 39px;
+  width: 40px;
+  height: 40px;
   place-items: center;
-  border-radius: 13px;
+  border-radius: 10px;
   background: var(--color-brand-50);
   color: var(--color-brand-600);
   font-size: var(--font-size-large);
 }
 
-.eyebrow {
+.sub-title {
   margin: 0;
   color: var(--color-neutral-600);
   font-size: var(--font-size-small);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   letter-spacing: 1.15px;
 }
 
-h1 {
-  margin: 2px 0 0;
-  font-family: var(--font-family);
+.title {
+  margin: 0;
   font-size: var(--font-size-default);
-  font-weight: 700;
-  letter-spacing: -0.55px;
+  font-weight: var(--font-weight-bold);
 }
 
 .balance {
@@ -102,12 +101,11 @@ h1 {
 
 .balance strong {
   color: var(--color-brand-600);
-  font-family: var(--font-family);
   font-size: var(--font-size-default);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
-.wheel-panel {
+.middle-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -122,10 +120,9 @@ h1 {
   position: relative;
   width: 270px;
   height: 270px;
-  padding: 9px;
-  border: 1px solid var(--color-neutral-100);
+  padding: 10px;
+  border: 2px solid var(--color-neutral-100);
   border-radius: 50%;
-  background: var(--color-neutral-0);
   box-shadow: var(--shadow-wheel);
 }
 
@@ -135,15 +132,13 @@ h1 {
   height: 100%;
   overflow: visible;
   border-radius: 50%;
-  transform: rotate(0deg);
   transition: transform 4.8s cubic-bezier(0.12, 0.78, 0.12, 1);
 }
 
 .wheel-label {
   fill: var(--color-neutral-0);
-  font-family: var(--font-family);
   font-size: var(--font-size-default);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   paint-order: stroke;
   stroke: var(--color-wheel-label-outline);
   stroke-width: 2px;
@@ -182,22 +177,19 @@ h1 {
 .feedback {
   display: flex;
   width: 100%;
-  min-height: calc(2.4em + 18px);
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
   margin: 0;
   padding: 8px 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--color-brand-50);
   color: var(--color-brand-600);
   font-size: var(--font-size-default);
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
   text-align: center;
 }
 
-.actions-section {
+.bottom-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -206,21 +198,19 @@ h1 {
 .spin-button {
   display: flex;
   width: 100%;
-  min-height: 49px;
+  height: 50px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   border: 0;
-  border-radius: 14px;
+  margin-top: 0;
+  border-radius: 10px;
   background: var(--color-brand-900);
   box-shadow: var(--shadow-button);
   color: var(--color-neutral-0);
   cursor: pointer;
-  font-family: var(--font-family);
   font-size: var(--font-size-default);
-  font-weight: 700;
-  margin-top: 0;
-  transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  font-weight: var(--font-weight-bold);
+  transition: transform 120ms ease, 120ms ease, box-shadow 120ms ease;
 }
 
 .spin-button:hover:not(:disabled) {
@@ -244,7 +234,6 @@ h1 {
 }
 
 .status {
-  min-height: 15px;
   margin: 0;
   color: var(--color-error);
   font-size: var(--font-size-small);
@@ -256,12 +245,12 @@ h1 {
   margin: 0 auto;
   padding: 7px 12px;
   border: 1px solid var(--color-neutral-600);
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
   color: var(--color-neutral-600);
   cursor: pointer;
   font-size: var(--font-size-small);
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
   transition: 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 

@@ -1,11 +1,12 @@
 const TOTAL_CHANCE_PERCENT = 100;
 const REWARDS = [
-  { cents: 10, chancePercent: 30 },
-  { cents: 25, chancePercent: 25 },
-  { cents: 50, chancePercent: 20 },
-  { cents: 100, chancePercent: 15 },
-  { cents: 200, chancePercent: 10 },
+  { cents: 0, chancePercent: 83.33, sliceWeight: 10 },
+  { cents: 300, chancePercent: 14.25, sliceWeight: 5 },
+  { cents: 1000, chancePercent: 2.00, sliceWeight: 3 },
+  { cents: 4000, chancePercent: 0.42, sliceWeight: 2 },
 ];
+const CHANCE_SUM_TOLERANCE = 1e-9;
+const TOTAL_CONFIGURED_CHANCE = REWARDS.reduce((sum, reward) => sum + reward.chancePercent, 0);
 const SEGMENT_COLORS = [
   "#ef8665",
   "#e6ae4f",
@@ -42,10 +43,15 @@ function pointOnWheel(angleDegrees, radius) {
   };
 }
 
+function getSliceAngle(sliceWeight) {
+  const totalSliceWeight = REWARDS.reduce((sum, reward) => sum + reward.sliceWeight, 0);
+  return sliceWeight / totalSliceWeight * 360;
+}
+
 function drawWheel() {
   let startAngle = 0;
   const segments = REWARDS.map((reward, index) => {
-    const segmentAngle = reward.chancePercent / TOTAL_CHANCE_PERCENT * 360;
+    const segmentAngle = getSliceAngle(reward.sliceWeight);
     const endAngle = startAngle + segmentAngle;
     const start = pointOnWheel(startAngle, 141);
     const end = pointOnWheel(endAngle, 141);
@@ -66,7 +72,7 @@ function drawWheel() {
         x="${label.x}"
         y="${label.y}"
         transform="rotate(${midAngle} ${label.x} ${label.y})"
-      >$${(reward.cents / 100).toFixed(2)}</text>
+      >${formatWheelReward(reward.cents)}</text>
     `;
   }).join("");
 
@@ -77,20 +83,19 @@ function formatMoney(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+function formatWheelReward(cents) {
+  const dollars = cents / 100;
+  return Number.isInteger(dollars) ? `$${dollars}` : formatMoney(cents);
+}
+
 function updateDisplays() {
   balanceDisplay.textContent = formatMoney(totalCents);
 }
 
 function randomSegmentIndex() {
-  const range = 0x100000000;
-  const limit = range - (range % TOTAL_CHANCE_PERCENT);
   const value = new Uint32Array(1);
-
-  do {
-    crypto.getRandomValues(value);
-  } while (value[0] >= limit);
-
-  const roll = value[0] % TOTAL_CHANCE_PERCENT;
+  crypto.getRandomValues(value);
+  const roll = value[0] / 0x100000000 * TOTAL_CONFIGURED_CHANCE;
   let cumulativeChance = 0;
 
   for (let index = 0; index < REWARDS.length; index += 1) {
@@ -106,15 +111,25 @@ async function saveProgress() {
 }
 
 async function initialize() {
-  const totalChance = REWARDS.reduce((sum, reward) => sum + reward.chancePercent, 0);
+  const totalChance = TOTAL_CONFIGURED_CHANCE;
+  const totalSliceWeight = REWARDS.reduce((sum, reward) => sum + reward.sliceWeight, 0);
   const hasInvalidChance = REWARDS.some(
-    (reward) => !Number.isInteger(reward.chancePercent) || reward.chancePercent <= 0,
+    (reward) => !Number.isFinite(reward.chancePercent) || reward.chancePercent <= 0,
   );
-  if (hasInvalidChance || totalChance !== TOTAL_CHANCE_PERCENT) {
-    status.textContent = "Reward chances must be positive whole percentages adding up to 100%.";
+  const hasInvalidSliceWeight = REWARDS.some(
+    (reward) => !Number.isFinite(reward.sliceWeight) || reward.sliceWeight <= 0,
+  );
+  if (
+    hasInvalidChance
+    || Math.abs(totalChance - TOTAL_CHANCE_PERCENT) > CHANCE_SUM_TOLERANCE
+    || hasInvalidSliceWeight
+    || !Number.isFinite(totalSliceWeight)
+    || totalSliceWeight <= 0
+  ) {
+    status.textContent = "Reward chances must total 100% and slice weights must be positive numbers.";
     spinButton.disabled = true;
     resetButton.disabled = true;
-    console.error("Invalid reward configuration:", { totalChance, rewards: REWARDS });
+    console.error("Invalid reward configuration:", { totalChance, totalSliceWeight, rewards: REWARDS });
     return;
   }
 
@@ -141,8 +156,8 @@ spinButton.addEventListener("click", () => {
   const reward = REWARDS[segmentIndex].cents;
   const segmentCenter = REWARDS
     .slice(0, segmentIndex)
-    .reduce((angle, item) => angle + item.chancePercent / TOTAL_CHANCE_PERCENT * 360, 0)
-    + REWARDS[segmentIndex].chancePercent / TOTAL_CHANCE_PERCENT * 180;
+    .reduce((angle, item) => angle + getSliceAngle(item.sliceWeight), 0)
+    + getSliceAngle(REWARDS[segmentIndex].sliceWeight) / 2;
   const currentAngle = ((rotation % 360) + 360) % 360;
   const landingAdjustment = (360 - ((segmentCenter + currentAngle) % 360)) % 360;
   const targetRotation = rotation + 5 * 360 + landingAdjustment;
@@ -160,7 +175,11 @@ spinButton.addEventListener("click", () => {
     rotation = targetRotation;
     totalCents += reward;
     updateDisplays();
-    setFeedback("ヽ(^o^)ノ", `You earned ${formatMoney(reward)}!`);
+    if (reward === 0) {
+      setFeedback("(；ω；)", "No reward this time.");
+    } else {
+      setFeedback("ヽ(^o^)ノ", `You earned ${formatMoney(reward)}!`);
+    }
     try {
       await saveProgress();
     } catch (error) {
