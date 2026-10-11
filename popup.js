@@ -13,7 +13,8 @@ const SEGMENT_ANGLE = 360 / REWARDS_CENTS.length;
 
 const wheel = document.querySelector("#wheel");
 const spinButton = document.querySelector("#spin-button");
-const result = document.querySelector("#result");
+const resetButton = document.querySelector("#reset-button");
+const feedback = document.querySelector("#feedback");
 const balanceDisplay = document.querySelector("#balance");
 const spinCountDisplay = document.querySelector("#spin-count");
 const status = document.querySelector("#status");
@@ -22,6 +23,7 @@ let totalCents = 0;
 let spinCount = 0;
 let rotation = 0;
 let spinning = false;
+let resetting = false;
 
 function pointOnWheel(angleDegrees, radius) {
   const radians = ((angleDegrees - 90) * Math.PI) / 180;
@@ -43,8 +45,8 @@ function drawWheel() {
     return `
       <path
         d="M 150 150 L ${start.x} ${start.y} A 141 141 0 0 1 ${end.x} ${end.y} Z"
-        fill="${SEGMENT_COLORS[index]}"
-        stroke="#fff"
+        fill="${SEGMENT_COLORS[index % SEGMENT_COLORS.length]}"
+        stroke="var(--color-wheel-divider)"
         stroke-width="2"
       />
       <text
@@ -56,7 +58,7 @@ function drawWheel() {
     `;
   }).join("");
 
-  wheel.innerHTML = `${segments}<circle cx="150" cy="150" r="141" fill="none" stroke="#fff" stroke-width="2" />`;
+  wheel.innerHTML = `${segments}<circle cx="150" cy="150" r="141" fill="none" stroke="var(--color-wheel-divider)" stroke-width="2" />`;
 }
 
 function formatMoney(cents) {
@@ -107,7 +109,7 @@ async function initialize() {
 }
 
 spinButton.addEventListener("click", () => {
-  if (spinning) return;
+  if (spinning || resetting) return;
 
   const segmentIndex = randomSegmentIndex();
   const reward = REWARDS_CENTS[segmentIndex];
@@ -118,11 +120,9 @@ spinButton.addEventListener("click", () => {
 
   spinning = true;
   spinButton.disabled = true;
+  resetButton.disabled = true;
   status.textContent = "";
-  if (result) {
-    result.classList.remove("is-win");
-    result.textContent = "The wheel is spinning…";
-  }
+  feedback.textContent = "The wheel is spinning…";
   wheel.style.transform = `rotate(${targetRotation}deg)`;
 
   wheel.addEventListener("transitionend", async function onSpinEnd(event) {
@@ -133,22 +133,41 @@ spinButton.addEventListener("click", () => {
     spinCount += 1;
     updateDisplays();
     const rewardMessage = `You earned ${formatMoney(reward)}!`;
-    if (result) {
-      result.textContent = rewardMessage;
-      result.classList.add("is-win");
-    } else {
-      status.textContent = rewardMessage;
-    }
-    spinning = false;
-    spinButton.disabled = false;
-
+    feedback.textContent = rewardMessage;
     try {
       await saveProgress();
     } catch (error) {
       status.textContent = "Reward added for now, but it could not be saved.";
       console.error("Unable to save wheel rewards:", error);
+    } finally {
+      spinning = false;
+      spinButton.disabled = false;
+      resetButton.disabled = false;
     }
   });
+});
+
+resetButton.addEventListener("click", async () => {
+  if (spinning || resetting) return;
+
+  resetting = true;
+  spinButton.disabled = true;
+  resetButton.disabled = true;
+  totalCents = 0;
+  updateDisplays();
+  status.textContent = "";
+  feedback.textContent = "Balance reset.";
+
+  try {
+    await saveProgress();
+  } catch (error) {
+    status.textContent = "Balance reset for now, but the change could not be saved.";
+    console.error("Unable to save reset reward balance:", error);
+  } finally {
+    resetting = false;
+    spinButton.disabled = false;
+    resetButton.disabled = false;
+  }
 });
 
 initialize();
