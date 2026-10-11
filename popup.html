@@ -11,32 +11,38 @@
 
 <body>
   <main class="app">
-    <header class="header">
-      <div class="brand-mark">✦</div>
-      <div>
-        <p class="eyebrow">MY POOKIES</p>
-        <h1>Reward Wheel</h1>
-      </div>
-      <div class="balance">
-        <p class="eyebrow">BALANCE</p>
-        <strong id="balance">$0.00</strong>
-      </div>
-    </header>
+    <section class="head-lockup">
+      <header class="header">
+        <div class="brand-mark">✦</div>
+        <div>
+          <p class="eyebrow">MY POOKIES</p>
+          <h1>Reward Wheel</h1>
+        </div>
+        <div class="balance">
+          <p class="eyebrow">BALANCE</p>
+          <strong id="balance">$0.00</strong>
+        </div>
+      </header>
+    </section>
 
-    <p id="feedback" class="feedback"></p>
-    <section class="wheel-section">
-      <div class="wheel-frame">
-        <div class="pointer"></div>
-        <svg id="wheel" class="wheel" viewBox="0 0 300 300"></svg>
-        <div class="wheel-center"></div>
+    <section class="wheel-panel">
+      <p id="feedback" class="feedback"></p>
+      <div class="wheel-section">
+        <div class="wheel-frame">
+          <div class="pointer"></div>
+          <svg id="wheel" class="wheel" viewBox="0 0 300 300"></svg>
+          <div class="wheel-center"></div>
+        </div>
       </div>
     </section>
 
-    <button id="spin-button" class="spin-button" type="button" disabled>
-      <span>Spin the Wheel</span>
-    </button>
-    <button id="reset-button" class="reset-button" type="button">Reset balance</button>
-    <p id="status" class="status"></p>
+    <section class="actions-section">
+      <button id="spin-button" class="spin-button" type="button" disabled>
+        <span>Spin the Wheel</span>
+      </button>
+      <button id="reset-button" class="reset-button" type="button">Reset balance</button>
+      <p id="status" class="status"></p>
+    </section>
   </main>
 </body>
 

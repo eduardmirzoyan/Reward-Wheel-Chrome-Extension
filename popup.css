@@ -64,8 +64,15 @@ button {
 }
 
 .app {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   padding: 24px 24px 18px;
   text-align: center;
+}
+
+.head-lockup {
+  width: 100%;
 }
 
 .header {
@@ -123,10 +130,15 @@ h1 {
   font-size: var(--font-size-default);
 }
 
+.wheel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .wheel-section {
   display: flex;
   justify-content: center;
-  margin-top: 30px;
 }
 
 .wheel-frame {
@@ -192,11 +204,17 @@ h1 {
 
 .feedback {
   min-height: 20px;
-  margin: 18px 0 0;
+  margin: 0;
   color: var(--color-brand-strong);
   font-size: var(--font-size-default);
   font-weight: 700;
   text-align: center;
+}
+
+.actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .spin-button {
@@ -215,7 +233,7 @@ h1 {
   font-family: var(--font-family);
   font-size: var(--font-size-default);
   font-weight: 700;
-  margin-top: 12px;
+  margin-top: 0;
   transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
 }
 
@@ -245,7 +263,7 @@ h1 {
 
 .status {
   min-height: 15px;
-  margin: 26px 0 0;
+  margin: 0;
   color: var(--color-error);
   font-size: var(--font-size-small);
   text-align: center;
@@ -253,7 +271,7 @@ h1 {
 
 .reset-button {
   display: block;
-  margin: 12px auto 0;
+  margin: 0 auto;
   padding: 7px 12px;
   border: 1px solid var(--color-reset-border);
   border-radius: 9px;
