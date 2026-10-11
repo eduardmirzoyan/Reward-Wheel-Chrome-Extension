@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Habit Reward Wheel</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="popup.js" defer></script>
+</head>
+
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="brand-mark" aria-hidden="true">✦</div>
+      <div>
+        <p class="eyebrow">TODO</p>
+        <h1>Reward Wheel</h1>
+      </div>
+      <div class="balance" aria-label="Your virtual reward balance">
+        <span class="balance-label">BALANCE</span>
+        <strong id="balance">$0.00</strong>
+      </div>
+    </header>
+
+    <section class="wheel-section" aria-label="Reward wheel">
+      <div class="wheel-frame">
+        <div class="pointer" aria-hidden="true"></div>
+        <svg id="wheel" class="wheel" viewBox="0 0 300 300" role="img"
+          aria-label="A wheel with five virtual cash rewards"></svg>
+        <div class="wheel-center" aria-hidden="true"><span>★</span></div>
+      </div>
+    </section>
+
+    <button id="spin-button" class="spin-button" type="button" disabled>
+      <span>Spin the Wheel</span>
+    </button>
+    <p id="status" class="status" role="status"></p>
+  </main>
+</body>
+
+</html>
