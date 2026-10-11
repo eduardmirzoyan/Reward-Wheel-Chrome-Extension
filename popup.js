@@ -61,7 +61,7 @@ function drawWheel() {
       <path
         d="M 150 150 L ${start.x} ${start.y} A 141 141 0 ${largeArc} 1 ${end.x} ${end.y} Z"
         fill="${SEGMENT_COLORS[index % SEGMENT_COLORS.length]}"
-        stroke="var(--color-wheel-divider)"
+        stroke="var(--color-neutral-0)"
         stroke-width="2"
       />
       <text
@@ -73,7 +73,7 @@ function drawWheel() {
     `;
   }).join("");
 
-  wheel.innerHTML = `${segments}<circle cx="150" cy="150" r="141" fill="none" stroke="var(--color-wheel-divider)" stroke-width="2" />`;
+  wheel.innerHTML = `${segments}<circle cx="150" cy="150" r="141" fill="none" stroke="var(--color-neutral-0)" stroke-width="2" />`;
 }
 
 function formatMoney(cents) {
