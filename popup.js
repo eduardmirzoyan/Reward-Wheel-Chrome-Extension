@@ -1,4 +1,5 @@
 const TOTAL_CHANCE_PERCENT = 100;
+const MAX_SPINS_PER_BATCH = 10;
 const REWARDS = [
   { cents: 0, chancePercent: 83.33, sliceWeight: 10 },
   { cents: 300, chancePercent: 14.25, sliceWeight: 5 },
@@ -19,6 +20,7 @@ const SEGMENT_COLORS = [
 ];
 const wheel = document.querySelector("#wheel");
 const spinButton = document.querySelector("#spin-button");
+const spinCountInput = document.querySelector("#spin-input");
 const resetButton = document.querySelector("#reset-button");
 const feedbackKaomoji = document.querySelector("#feedback-kaomoji");
 const feedbackMessage = document.querySelector("#feedback-message");
@@ -29,6 +31,8 @@ let totalCents = 0;
 let rotation = 0;
 let spinning = false;
 let resetting = false;
+
+spinCountInput.max = String(MAX_SPINS_PER_BATCH);
 
 function setFeedback(kaomoji, message) {
   feedbackKaomoji.textContent = kaomoji;
@@ -106,6 +110,28 @@ function randomSegmentIndex() {
   throw new Error("Configured reward chances must add up to 100%.");
 }
 
+function getTargetRotation(segmentIndex) {
+  const segmentCenter = REWARDS
+    .slice(0, segmentIndex)
+    .reduce((angle, item) => angle + getSliceAngle(item.sliceWeight), 0)
+    + getSliceAngle(REWARDS[segmentIndex].sliceWeight) / 2;
+  const currentAngle = ((rotation % 360) + 360) % 360;
+  const landingAdjustment = (360 - ((segmentCenter + currentAngle) % 360)) % 360;
+  return rotation + 5 * 360 + landingAdjustment;
+}
+
+function spinToSegment(targetRotation) {
+  return new Promise((resolve) => {
+    wheel.addEventListener("transitionend", function onSpinEnd(event) {
+      if (event.target !== wheel || event.propertyName !== "transform") return;
+      wheel.removeEventListener("transitionend", onSpinEnd);
+      rotation = targetRotation;
+      resolve();
+    });
+    wheel.style.transform = `rotate(${targetRotation}deg)`;
+  });
+}
+
 async function saveProgress() {
   await chrome.storage.local.set({ totalCents });
 }
@@ -149,48 +175,66 @@ async function initialize() {
   }
 }
 
-spinButton.addEventListener("click", () => {
+spinButton.addEventListener("click", async () => {
   if (spinning || resetting) return;
 
-  const segmentIndex = randomSegmentIndex();
-  const reward = REWARDS[segmentIndex].cents;
-  const segmentCenter = REWARDS
-    .slice(0, segmentIndex)
-    .reduce((angle, item) => angle + getSliceAngle(item.sliceWeight), 0)
-    + getSliceAngle(REWARDS[segmentIndex].sliceWeight) / 2;
-  const currentAngle = ((rotation % 360) + 360) % 360;
-  const landingAdjustment = (360 - ((segmentCenter + currentAngle) % 360)) % 360;
-  const targetRotation = rotation + 5 * 360 + landingAdjustment;
+  const spinCount = spinCountInput.valueAsNumber;
+  if (
+    !Number.isInteger(spinCount)
+    || spinCount < 1
+    || spinCount > MAX_SPINS_PER_BATCH
+  ) {
+    status.textContent = `Enter a whole number from 1 to ${MAX_SPINS_PER_BATCH}.`;
+    spinCountInput.focus();
+    return;
+  }
 
   spinning = true;
   spinButton.disabled = true;
+  spinCountInput.disabled = true;
   resetButton.disabled = true;
   status.textContent = "";
-  setFeedback("(ﾉ>ω<)ﾉ", "The wheel is spinning…");
-  wheel.style.transform = `rotate(${targetRotation}deg)`;
+  let batchReward = 0;
+  let saveFailed = false;
 
-  wheel.addEventListener("transitionend", async function onSpinEnd(event) {
-    if (event.target !== wheel || event.propertyName !== "transform") return;
-    wheel.removeEventListener("transitionend", onSpinEnd);
-    rotation = targetRotation;
-    totalCents += reward;
-    updateDisplays();
-    if (reward === 0) {
-      setFeedback("(；ω；)", "No reward this time.");
+  try {
+    for (let index = 0; index < spinCount; index += 1) {
+      const segmentIndex = randomSegmentIndex();
+      const reward = REWARDS[segmentIndex].cents;
+      const targetRotation = getTargetRotation(segmentIndex);
+      setFeedback("(ﾉ>ω<)ﾉ", spinCount > 1
+        ? `Spin ${index + 1} of ${spinCount}…`
+        : "The wheel is spinning…");
+      await spinToSegment(targetRotation);
+      totalCents += reward;
+      batchReward += reward;
+      updateDisplays();
+
+      try {
+        await saveProgress();
+      } catch (error) {
+        saveFailed = true;
+        console.error("Unable to save wheel rewards:", error);
+      }
+    }
+
+    if (batchReward === 0) {
+      setFeedback("(；ω；)", spinCount > 1 ? "No rewards this time." : "No reward this time.");
     } else {
-      setFeedback("ヽ(^o^)ノ", `You earned ${formatMoney(reward)}!`);
+      const result = spinCount > 1
+        ? `${spinCount} spins: earned ${formatMoney(batchReward)}`
+        : `You earned ${formatMoney(batchReward)}!`;
+      setFeedback("ヽ(^o^)ノ", result);
     }
-    try {
-      await saveProgress();
-    } catch (error) {
-      status.textContent = "Reward added for now, but it could not be saved.";
-      console.error("Unable to save wheel rewards:", error);
-    } finally {
-      spinning = false;
-      spinButton.disabled = false;
-      resetButton.disabled = false;
+    if (saveFailed) {
+      status.textContent = "One or more rewards could not be saved.";
     }
-  });
+  } finally {
+    spinning = false;
+    spinButton.disabled = false;
+    spinCountInput.disabled = false;
+    resetButton.disabled = false;
+  }
 });
 
 resetButton.addEventListener("click", async () => {
@@ -198,6 +242,7 @@ resetButton.addEventListener("click", async () => {
 
   resetting = true;
   spinButton.disabled = true;
+  spinCountInput.disabled = true;
   resetButton.disabled = true;
   totalCents = 0;
   updateDisplays();
@@ -212,6 +257,7 @@ resetButton.addEventListener("click", async () => {
   } finally {
     resetting = false;
     spinButton.disabled = false;
+    spinCountInput.disabled = false;
     resetButton.disabled = false;
   }
 });

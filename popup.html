@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <main class="app">
+  <main class="main">
     <section class="top-section">
       <header class="header">
         <div class="brand-icon">✦</div>
@@ -40,9 +40,13 @@
     </section>
 
     <section class="bottom-section">
-      <button id="spin-button" class="spin-button" type="button" disabled>
-        <span>Spin the Wheel</span>
-      </button>
+      <div class="spin-controls">
+        <button id="spin-button" class="spin-button" type="button" disabled>
+          <span>Spin Wheel</span>
+        </button>
+        <input id="spin-input" class="spin-input" type="number" min="1" step="1" value="1">
+        <span class="spin-count-label">times</span>
+      </div>
       <button id="reset-button" class="reset-button" type="button">Reset balance</button>
       <p id="status" class="status"></p>
     </section>
