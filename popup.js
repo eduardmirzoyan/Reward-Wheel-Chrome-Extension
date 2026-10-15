@@ -6,6 +6,7 @@ const REWARDS = [
   { cents: 1000, chancePercent: 2.00, sliceWeight: 3 },
   { cents: 4000, chancePercent: 0.42, sliceWeight: 2 },
 ];
+const KAOMOJI_STATES = ["idle", "spinning", "reward", "noReward"];
 const CHANCE_SUM_TOLERANCE = 1e-9;
 const TOTAL_CONFIGURED_CHANCE = REWARDS.reduce((sum, reward) => sum + reward.chancePercent, 0);
 const SEGMENT_COLORS = [
@@ -31,12 +32,34 @@ let totalCents = 0;
 let rotation = 0;
 let spinning = false;
 let resetting = false;
+let kaomojiBank;
 
 spinCountInput.max = String(MAX_SPINS_PER_BATCH);
 
-function setFeedback(kaomoji, message) {
-  feedbackKaomoji.textContent = kaomoji;
+function setFeedback(state, message) {
+  const kaomojis = kaomojiBank[state];
+  const randomIndex = Math.floor(Math.random() * kaomojis.length);
+  feedbackKaomoji.textContent = kaomojis[randomIndex];
   feedbackMessage.textContent = message;
+}
+
+async function loadKaomojiBank() {
+  const response = await fetch(chrome.runtime.getURL("kaomojis.json"));
+  if (!response.ok) {
+    throw new Error(`Kaomoji bank request failed with status ${response.status}.`);
+  }
+
+  const bank = await response.json();
+  const hasInvalidList = KAOMOJI_STATES.some((state) => (
+    !Array.isArray(bank[state])
+    || bank[state].length === 0
+    || bank[state].some((kaomoji) => typeof kaomoji !== "string" || kaomoji.trim() === "")
+  ));
+  if (hasInvalidList) {
+    throw new Error("Kaomoji bank must contain a non-empty list of strings for each state.");
+  }
+
+  return bank;
 }
 
 function pointOnWheel(angleDegrees, radius) {
@@ -156,6 +179,9 @@ async function saveProgress() {
 }
 
 async function initialize() {
+  spinButton.disabled = true;
+  resetButton.disabled = true;
+
   const totalChance = TOTAL_CONFIGURED_CHANCE;
   const totalSliceWeight = REWARDS.reduce((sum, reward) => sum + reward.sliceWeight, 0);
   const hasInvalidChance = REWARDS.some(
@@ -178,8 +204,17 @@ async function initialize() {
     return;
   }
 
+  try {
+    kaomojiBank = await loadKaomojiBank();
+  } catch (error) {
+    status.textContent = "The kaomoji bank couldn't be loaded. Check kaomojis.json and reload the extension.";
+    console.error("Unable to load kaomoji bank:", error);
+    return;
+  }
+
   drawWheel();
   startIdleRotation();
+  setFeedback("idle", "");
   try {
     const saved = await chrome.storage.local.get("totalCents");
     totalCents = Number.isSafeInteger(saved.totalCents) && saved.totalCents >= 0
@@ -187,9 +222,11 @@ async function initialize() {
       : 0;
     updateDisplays();
     spinButton.disabled = false;
+    resetButton.disabled = false;
   } catch (error) {
     updateDisplays();
     spinButton.disabled = false;
+    resetButton.disabled = false;
     status.textContent = "Saved rewards couldn't be loaded. You can spin, but progress may not be saved.";
     console.error("Unable to load saved wheel rewards:", error);
   }
@@ -224,7 +261,7 @@ spinButton.addEventListener("click", async () => {
       const segmentIndex = randomSegmentIndex();
       const reward = REWARDS[segmentIndex].cents;
       const targetRotation = getTargetRotation(segmentIndex);
-      setFeedback("(ﾉ>ω<)ﾉ", spinCount > 1
+      setFeedback("spinning", spinCount > 1
         ? `Spin ${index + 1} of ${spinCount}…`
         : "The wheel is spinning…");
       await spinToSegment(targetRotation);
@@ -241,12 +278,12 @@ spinButton.addEventListener("click", async () => {
     }
 
     if (batchReward === 0) {
-      setFeedback("(；ω；)", spinCount > 1 ? "No rewards this time." : "No reward this time.");
+      setFeedback("noReward", spinCount > 1 ? "No rewards this time." : "No reward this time.");
     } else {
       const result = spinCount > 1
         ? `${spinCount} spins: earned ${formatMoney(batchReward)}`
         : `You earned ${formatMoney(batchReward)}!`;
-      setFeedback("ヽ(^o^)ノ", result);
+      setFeedback("reward", result);
     }
     if (saveFailed) {
       status.textContent = "One or more rewards could not be saved.";
@@ -269,7 +306,7 @@ resetButton.addEventListener("click", async () => {
   totalCents = 0;
   updateDisplays();
   status.textContent = "";
-  setFeedback("(｀・ω・´)", "Balance reset.");
+  setFeedback("idle", "Balance reset.");
 
   try {
     await saveProgress();
@@ -284,5 +321,4 @@ resetButton.addEventListener("click", async () => {
   }
 });
 
-setFeedback("(-_-) zZ", "");
 initialize();

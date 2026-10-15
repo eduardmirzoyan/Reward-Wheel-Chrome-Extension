@@ -31,6 +31,10 @@ relative visual size of each wheel segment; weights must be positive but do not
 need to total a particular amount. Change the `REWARDS` array in `popup.js` to
 customize the rewards, chances, or segment sizes.
 
+Edit `kaomojis.json` to customize the randomly selected feedback kaomojis. It
+has a separate list for each state: `idle`, `spinning`, `reward`, and
+`noReward`. Keep each list non-empty and fill it with strings.
+
 ## Install in Chrome
 
 1. Open `chrome://extensions`.
