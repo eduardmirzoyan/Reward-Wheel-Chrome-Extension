@@ -16,7 +16,8 @@ money, and cannot be redeemed.
 
 ## Default rewards
 
-The reward configuration is in `popup.js`.
+Wheel rewards, slice colors, the batch-spin limit, and feedback kaomojis are all
+configured in `setting.json`.
 
 | Reward | Chance | Slice weight |
 | --- | ---: | ---: |
@@ -28,12 +29,12 @@ The reward configuration is in `popup.js`.
 `chancePercent` determines the probability of winning each reward (decimal
 percentages are supported). The chances must total 100%. `sliceWeight` sets the
 relative visual size of each wheel segment; weights must be positive but do not
-need to total a particular amount. Change the `REWARDS` array in `popup.js` to
-customize the rewards, chances, or segment sizes.
+need to total a particular amount. Edit the `rewards` list to customize rewards,
+chances, segment sizes, and the `color` for each segment.
 
-Edit `kaomojis.json` to customize the randomly selected feedback kaomojis. It
-has a separate list for each state: `idle`, `spinning`, `reward`, and
-`noReward`. Keep each list non-empty and fill it with strings.
+The `maxSpinsPerBatch` value controls the allowed batch size. The `kaomojis`
+object contains a separate non-empty list of strings for each feedback state:
+`idle`, `spinning`, `reward`, and `noReward`.
 
 ## Install in Chrome
 

@@ -1,0 +1,47 @@
+{
+  "maxSpinsPerBatch": 10,
+  "rewards": [
+    {
+      "cents": 0,
+      "chancePercent": 83.33,
+      "sliceWeight": 10,
+      "color": "#ef8665"
+    },
+    {
+      "cents": 300,
+      "chancePercent": 14.25,
+      "sliceWeight": 5,
+      "color": "#e6ae4f"
+    },
+    {
+      "cents": 1000,
+      "chancePercent": 2.00,
+      "sliceWeight": 3,
+      "color": "#82aa70"
+    },
+    {
+      "cents": 4000,
+      "chancePercent": 0.42,
+      "sliceWeight": 2,
+      "color": "#5b9b91"
+    }
+  ],
+  "kaomojis": {
+    "idle": [
+      "(-_-) zZ",
+      "(｀・ω・´)"
+    ],
+    "spinning": [
+      "(ﾉ>ω<)ﾉ",
+      "ᕕ( ᐛ )ᕗ"
+    ],
+    "reward": [
+      "ヽ(^o^)ノ",
+      "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧"
+    ],
+    "noReward": [
+      "(；ω；)",
+      "ಥ_ಥ"
+    ]
+  }
+}
