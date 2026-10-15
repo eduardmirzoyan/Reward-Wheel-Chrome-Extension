@@ -5,6 +5,7 @@
   --font-size-large: 24px;
   --font-weight-bold: 700;
   --wheel-spin-duration: 1.0s;
+  --wheel-idle-duration: 40s;
 
   --color-neutral-0: #ffffff;
   --color-neutral-100: #e9e8e1;
@@ -129,6 +130,21 @@ button {
   overflow: visible;
   border-radius: 50%;
   transition: transform var(--wheel-spin-duration) cubic-bezier(0.12, 0.78, 0.12, 1);
+}
+
+.wheel.is-idle {
+  animation: wheel-idle-spin var(--wheel-idle-duration) linear infinite;
+  transition: none;
+}
+
+@keyframes wheel-idle-spin {
+  from {
+    transform: rotate(var(--wheel-idle-start, 0deg));
+  }
+
+  to {
+    transform: rotate(calc(var(--wheel-idle-start, 0deg) + 360deg));
+  }
 }
 
 .wheel-label {
@@ -300,4 +316,9 @@ button {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+
+  .wheel.is-idle {
+    animation: none !important;
+  }
+
 }

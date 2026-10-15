@@ -96,6 +96,25 @@ function updateDisplays() {
   balanceDisplay.textContent = formatMoney(totalCents);
 }
 
+function startIdleRotation() {
+  wheel.style.setProperty("--wheel-idle-start", `${rotation}deg`);
+  wheel.classList.add("is-idle");
+}
+
+async function stopIdleRotation() {
+  if (!wheel.classList.contains("is-idle")) return;
+
+  const transform = getComputedStyle(wheel).transform;
+  if (transform !== "none") {
+    const matrix = new DOMMatrixReadOnly(transform);
+    rotation = (Math.atan2(matrix.b, matrix.a) * 180) / Math.PI;
+  }
+
+  wheel.classList.remove("is-idle");
+  wheel.style.transform = `rotate(${rotation}deg)`;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+}
+
 function randomSegmentIndex() {
   const value = new Uint32Array(1);
   crypto.getRandomValues(value);
@@ -160,6 +179,7 @@ async function initialize() {
   }
 
   drawWheel();
+  startIdleRotation();
   try {
     const saved = await chrome.storage.local.get("totalCents");
     totalCents = Number.isSafeInteger(saved.totalCents) && saved.totalCents >= 0
@@ -198,6 +218,8 @@ spinButton.addEventListener("click", async () => {
   let saveFailed = false;
 
   try {
+    await stopIdleRotation();
+
     for (let index = 0; index < spinCount; index += 1) {
       const segmentIndex = randomSegmentIndex();
       const reward = REWARDS[segmentIndex].cents;
