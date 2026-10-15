@@ -9,6 +9,7 @@ const REWARDS = [
 const KAOMOJI_STATES = ["idle", "spinning", "reward", "noReward"];
 const CHANCE_SUM_TOLERANCE = 1e-9;
 const TOTAL_CONFIGURED_CHANCE = REWARDS.reduce((sum, reward) => sum + reward.chancePercent, 0);
+const TOTAL_SLICE_WEIGHT = REWARDS.reduce((sum, reward) => sum + reward.sliceWeight, 0);
 const SEGMENT_COLORS = [
   "#ef8665",
   "#e6ae4f",
@@ -36,6 +37,12 @@ let kaomojiBank;
 
 spinCountInput.max = String(MAX_SPINS_PER_BATCH);
 
+function setControlsDisabled(disabled) {
+  spinButton.disabled = disabled;
+  spinCountInput.disabled = disabled;
+  resetButton.disabled = disabled;
+}
+
 function setFeedback(state, message) {
   const kaomojis = kaomojiBank[state];
   const randomIndex = Math.floor(Math.random() * kaomojis.length);
@@ -50,6 +57,10 @@ async function loadKaomojiBank() {
   }
 
   const bank = await response.json();
+  if (bank === null || typeof bank !== "object" || Array.isArray(bank)) {
+    throw new Error("Kaomoji bank must be a JSON object.");
+  }
+
   const hasInvalidList = KAOMOJI_STATES.some((state) => (
     !Array.isArray(bank[state])
     || bank[state].length === 0
@@ -71,8 +82,7 @@ function pointOnWheel(angleDegrees, radius) {
 }
 
 function getSliceAngle(sliceWeight) {
-  const totalSliceWeight = REWARDS.reduce((sum, reward) => sum + reward.sliceWeight, 0);
-  return sliceWeight / totalSliceWeight * 360;
+  return sliceWeight / TOTAL_SLICE_WEIGHT * 360;
 }
 
 function drawWheel() {
@@ -80,11 +90,11 @@ function drawWheel() {
   const segments = REWARDS.map((reward, index) => {
     const segmentAngle = getSliceAngle(reward.sliceWeight);
     const endAngle = startAngle + segmentAngle;
-    const start = pointOnWheel(startAngle, 141);
-    const end = pointOnWheel(endAngle, 141);
     const midAngle = startAngle + segmentAngle / 2;
     const label = pointOnWheel(midAngle, 94);
     const largeArc = segmentAngle > 180 ? 1 : 0;
+    const start = pointOnWheel(startAngle, 141);
+    const end = pointOnWheel(endAngle, 141);
     startAngle = endAngle;
 
     return `
@@ -179,28 +189,26 @@ async function saveProgress() {
 }
 
 async function initialize() {
-  spinButton.disabled = true;
-  resetButton.disabled = true;
+  setControlsDisabled(true);
 
-  const totalChance = TOTAL_CONFIGURED_CHANCE;
-  const totalSliceWeight = REWARDS.reduce((sum, reward) => sum + reward.sliceWeight, 0);
-  const hasInvalidChance = REWARDS.some(
-    (reward) => !Number.isFinite(reward.chancePercent) || reward.chancePercent <= 0,
-  );
-  const hasInvalidSliceWeight = REWARDS.some(
-    (reward) => !Number.isFinite(reward.sliceWeight) || reward.sliceWeight <= 0,
-  );
+  const hasInvalidReward = REWARDS.some((reward) => (
+    !Number.isFinite(reward.chancePercent)
+    || reward.chancePercent <= 0
+    || !Number.isFinite(reward.sliceWeight)
+    || reward.sliceWeight <= 0
+  ));
   if (
-    hasInvalidChance
-    || Math.abs(totalChance - TOTAL_CHANCE_PERCENT) > CHANCE_SUM_TOLERANCE
-    || hasInvalidSliceWeight
-    || !Number.isFinite(totalSliceWeight)
-    || totalSliceWeight <= 0
+    hasInvalidReward
+    || Math.abs(TOTAL_CONFIGURED_CHANCE - TOTAL_CHANCE_PERCENT) > CHANCE_SUM_TOLERANCE
+    || !Number.isFinite(TOTAL_SLICE_WEIGHT)
+    || TOTAL_SLICE_WEIGHT <= 0
   ) {
     status.textContent = "Reward chances must total 100% and slice weights must be positive numbers.";
-    spinButton.disabled = true;
-    resetButton.disabled = true;
-    console.error("Invalid reward configuration:", { totalChance, totalSliceWeight, rewards: REWARDS });
+    console.error("Invalid reward configuration:", {
+      totalChance: TOTAL_CONFIGURED_CHANCE,
+      totalSliceWeight: TOTAL_SLICE_WEIGHT,
+      rewards: REWARDS,
+    });
     return;
   }
 
@@ -221,12 +229,10 @@ async function initialize() {
       ? saved.totalCents
       : 0;
     updateDisplays();
-    spinButton.disabled = false;
-    resetButton.disabled = false;
+    setControlsDisabled(false);
   } catch (error) {
     updateDisplays();
-    spinButton.disabled = false;
-    resetButton.disabled = false;
+    setControlsDisabled(false);
     status.textContent = "Saved rewards couldn't be loaded. You can spin, but progress may not be saved.";
     console.error("Unable to load saved wheel rewards:", error);
   }
@@ -247,9 +253,7 @@ spinButton.addEventListener("click", async () => {
   }
 
   spinning = true;
-  spinButton.disabled = true;
-  spinCountInput.disabled = true;
-  resetButton.disabled = true;
+  setControlsDisabled(true);
   status.textContent = "";
   let batchReward = 0;
   let saveFailed = false;
@@ -290,9 +294,7 @@ spinButton.addEventListener("click", async () => {
     }
   } finally {
     spinning = false;
-    spinButton.disabled = false;
-    spinCountInput.disabled = false;
-    resetButton.disabled = false;
+    setControlsDisabled(false);
   }
 });
 
@@ -300,9 +302,7 @@ resetButton.addEventListener("click", async () => {
   if (spinning || resetting) return;
 
   resetting = true;
-  spinButton.disabled = true;
-  spinCountInput.disabled = true;
-  resetButton.disabled = true;
+  setControlsDisabled(true);
   totalCents = 0;
   updateDisplays();
   status.textContent = "";
@@ -315,9 +315,7 @@ resetButton.addEventListener("click", async () => {
     console.error("Unable to save reset reward balance:", error);
   } finally {
     resetting = false;
-    spinButton.disabled = false;
-    spinCountInput.disabled = false;
-    resetButton.disabled = false;
+    setControlsDisabled(false);
   }
 });
 
